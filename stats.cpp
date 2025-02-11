@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include <cstring>
+#include <limits>
 
 /*
 Exercise: Basic Statistics Calculator
@@ -39,14 +40,95 @@ class Stats {
 
 void
 Stats::calculate(const std::vector<int>& data) {
-    // TODO: Implement this method
-    // It should process the input vector and update sum, max, and avg
+    if (data.empty()) return;
+
+    max = std::numeric_limits<int>::min();
+    for (int value : data) {
+        sum += value;
+        if (value > max) {
+            max = value;
+        }
+    }
+
+    avg = static_cast<double>(sum) / data.size();
 }
 
+// -------------------Testing-------------------
+
+bool checkStats(const std::vector<int>& data,
+    int expectedSum,
+    int expectedMax,
+    double expectedAvg)
+{
+    Stats s(data);
+
+    bool match = true;
+    if (s.sum != expectedSum) {
+    match = false;
+    }
+    if (s.max != expectedMax) {
+    match = false;
+    }
+    // Compare avg with some tolerance
+    if (std::abs(s.avg - expectedAvg) > 1e-9) {
+    match = false;
+    }
+
+    return match;
+}
+
+int runAllTests() {
+    int totalTests = 3;
+    int passCount = 0;
+
+    // Test 1: empty input
+    if (checkStats({}, 0, 0, 0.0)) {
+        passCount++;
+    }
+
+    // Test 2: simple positive
+    if (checkStats({1,2,3}, 6, 3, 2.0)) {
+        passCount++;
+    }
+
+    // Test 3: mixed negative/positive
+    if (checkStats({-5, 5}, 0, 5, 0.0)) {
+        passCount++;
+    }
+
+    // Return number of failures
+    return (totalTests - passCount);
+}
+
+// ------------------------------------------
+
 int main(int argc, char** argv) {
+    if (argc > 1 && std::strcmp(argv[1], "--test") == 0) {
+        // Test mode
+        int fails = runAllTests();
+        if (fails == 0) {
+            std::cout << "All tests passed!\n";
+            return 0; 
+        } else {
+            std::cout << fails << " test(s) failed.\n";
+            return 1;
+        }
+    } 
+    
+    // Normal mode
     std::vector<int> data;
-    // Read integers from stdin into data until EOF or invalid input
-    // Exit with appropriate message if input is invalid
+
+    int val;
+    while (std::cin >> val) {
+        data.push_back(val);
+    }
+
+    // If the stream is not at EOF, it means invalid input
+    if (!std::cin.eof()) {
+        std::cerr << "Invalid input encountered. Exiting.\n";
+        return 1; 
+    }
+
     Stats s(data);
     
     std::cout << "Count: " << data.size() << std::endl;
